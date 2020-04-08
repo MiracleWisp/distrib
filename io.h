@@ -3,7 +3,6 @@
 
 #include "ipc.h"
 
-local_id local_pid;
 int processes_count;
 int reader[MAX_PROCESS_ID][MAX_PROCESS_ID];
 int writer[MAX_PROCESS_ID][MAX_PROCESS_ID];

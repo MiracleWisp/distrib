@@ -1,9 +1,10 @@
 #include "ipc.h"
 #include "io.h"
+#include "local_state.h"
 #include <unistd.h>
 
 int send(void *self, local_id dst, const Message *msg) {
-    int fd = writer[local_pid][dst];
+    int fd = writer[local_state.id][dst];
     write(fd, &msg->s_header, sizeof(MessageHeader));
     write(fd, &msg->s_payload, msg->s_header.s_payload_len);
     return 0;
@@ -12,7 +13,7 @@ int send(void *self, local_id dst, const Message *msg) {
 
 int send_multicast(void *self, const Message *msg) {
     for (int dest = 0; dest < processes_count; dest++) {
-        if (dest != local_pid) {
+        if (dest != local_state.id) {
             send(self, dest, msg);
         }
     }
@@ -20,7 +21,7 @@ int send_multicast(void *self, const Message *msg) {
 }
 
 int receive(void *self, local_id from, Message *msg) {
-    int fd = writer[from][local_pid];
+    int fd = writer[from][local_state.id];
     read(fd, &msg->s_header, sizeof(MessageHeader));
     read(fd, &msg->s_payload, (size_t) &msg->s_header.s_payload_len);
     return 0;

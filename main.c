@@ -7,15 +7,23 @@
 #include "ipc.h"
 #include "logger.h"
 #include "io.h"
+#include "banking.h"
+#include "local_state.h"
+#include "child.h"
+#include "parent.h"
+
+void transfer(void *parent_data, local_id src, local_id dst,
+              balance_t amount) {
+    // student, please implement me
+}
 
 int main(int argc, char **argv) {
-
     //read options
     int opt;
     while ((opt = getopt(argc, argv, "p:")) != -1) {
         switch (opt) {
             case 'p':
-                processes_count = atoi(optarg) + 1;
+                processes_count = strtol(optarg, NULL, 10) + 1;
                 break;
             default:
                 exit(EXIT_FAILURE);
@@ -24,74 +32,28 @@ int main(int argc, char **argv) {
 
     create_pipes();
     log_init();
-    pid_t process2pid[processes_count];
+
     // Spawn processes
     for (int id = 1; id < processes_count; id++) {
         pid_t child_pid = fork();
         if (!child_pid) {
             //child
-            local_pid = id;
+            local_state.id = id;
+            init_state(id, strtol(argv[id + 2], NULL, 10));
             break;
         } else {
             //parent
-            local_pid = PARENT_ID;
+            local_state.id = PARENT_ID;
             process2pid[id] = child_pid;
         }
     }
+
     close_useless_pipes();
-    if (local_pid != PARENT_ID) {
-        log_started();
-        Message msg = {
-                {
-                        MESSAGE_MAGIC,
-                        0,
-                        STARTED,
-                }
-        };
-        sprintf(msg.s_payload, log_started_fmt, local_pid, getpid(), getppid());
-        msg.s_header.s_payload_len = strlen(msg.s_payload);
-        send_multicast(NULL, &msg);
-    }
-
-    for (size_t id = 1; id < processes_count; id++) {
-        Message msg;
-        if (id == local_pid) {
-            continue;
-        }
-        receive(NULL, id, &msg);
-    }
-
-    log_received_all_started();
-
-    if (local_pid != PARENT_ID) {
-        log_done();
-        Message msg = {
-                {
-                        MESSAGE_MAGIC,
-                        0,
-                        DONE,
-                }
-        };
-        sprintf(msg.s_payload, log_done_fmt, local_pid);
-        msg.s_header.s_payload_len = strlen(msg.s_payload);
-        send_multicast(NULL, &msg);
-    }
-
-    for (size_t id = 1; id < processes_count; id++) {
-        Message msg;
-        if (id == local_pid) {
-            continue;
-        }
-        receive(NULL, id, &msg);
-    }
-    log_received_all_done();
-
-    if (local_pid == PARENT_ID) {
-        // Wait for the children to stop
-        for (int id = 1; id < processes_count; id++) {
-            waitpid(process2pid[id], NULL, 0);
-        }
-        log_close();
+    printf("%d\n", local_state.id);
+    if (local_state.id == PARENT_ID) {
+        parent_run();
+    } else {
+        child_run();
     }
 
     return 0;

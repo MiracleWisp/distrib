@@ -2,38 +2,23 @@
 #define PA1_LOGGER_H
 
 #include <stdio.h>
-#include <time.h>
-#include "io.h"
-#include "common.h"
-#include "pa1.h"
 
 static FILE *events_log_file;
 
-void log_init() {
-    events_log_file = fopen(events_log, "w");
-}
+void log_init();
 
-void log_started() {
-    pid_t pid = getpid();
-    pid_t parent_pid = getppid();
-    fprintf(events_log_file, log_started_fmt, local_pid, pid, parent_pid);
-}
+void log_started();
 
-void log_received_all_started() {
-    fprintf(events_log_file, log_received_all_started_fmt, local_pid);
-}
+void log_received_all_started();
 
-void log_done() {
-    fprintf(events_log_file, log_done_fmt, local_pid);
-}
+void log_done();
 
-void log_received_all_done() {
-    fprintf(events_log_file, log_received_all_done_fmt, local_pid);
-}
+void log_received_all_done();
 
-void log_close() {
-    fclose(events_log_file);
-}
+void log_transfer_out(int money, int dest);
 
+void log_transfer_in(int money, int src);
+
+void log_close();
 
 #endif //PA1_LOGGER_H
