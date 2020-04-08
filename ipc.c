@@ -2,6 +2,7 @@
 #include "io.h"
 #include "local_state.h"
 #include <unistd.h>
+#include "stdio.h"
 
 int send(void *self, local_id dst, const Message *msg) {
     int fd = writer[local_state.id][dst];
@@ -21,7 +22,7 @@ int send_multicast(void *self, const Message *msg) {
 }
 
 int receive(void *self, local_id from, Message *msg) {
-    int fd = writer[from][local_state.id];
+    int fd = reader[from][local_state.id];
     read(fd, &msg->s_header, sizeof(MessageHeader));
     read(fd, &msg->s_payload, (size_t) &msg->s_header.s_payload_len);
     return 0;

@@ -5,8 +5,6 @@
 #include "local_state.h"
 
 void parent_run() {
-    printf("in parent\n");
-
     //wait for STARTED msgs from all other processes
     for (size_t id = 1; id < processes_count; id++) {
         Message msg;
@@ -15,6 +13,7 @@ void parent_run() {
         }
         receive(NULL, id, &msg);
     }
+
     log_received_all_started();
 
 

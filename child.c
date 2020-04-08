@@ -9,8 +9,6 @@
 
 
 void child_run() {
-    printf("in child %d\n", local_state.id);
-
     log_started();
     child_send_started();
 

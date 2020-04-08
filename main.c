@@ -49,7 +49,6 @@ int main(int argc, char **argv) {
     }
 
     close_useless_pipes();
-    printf("%d\n", local_state.id);
     if (local_state.id == PARENT_ID) {
         parent_run();
     } else {

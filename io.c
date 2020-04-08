@@ -24,10 +24,10 @@ void create_pipes() {
                 int fds[2];
                 pipe(fds);
                 // Enable non-blocking mode
-                /*for (int i = 0; i < 2; ++i) {
+                for (int i = 0; i < 2; ++i) {
                     unsigned int flags = fcntl(fds[i], F_GETFL, 0);
                     fcntl(fds[i], F_SETFL, flags | O_NONBLOCK);
-                }*/
+                }
 
                 reader[source][destination] = fds[0];
                 writer[source][destination] = fds[1];
