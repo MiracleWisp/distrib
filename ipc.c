@@ -1,3 +1,5 @@
+#define _XOPEN_SOURCE 600 /* needed for timespec in <time.h> */
+
 #include "ipc.h"
 #include "io.h"
 #include "local_state.h"
@@ -5,6 +7,7 @@
 #include <asm/errno.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <time.h>
 #include "stdio.h"
 #include "string.h"
 
@@ -64,5 +67,6 @@ int receive_any(void *self, Message *msg) {
                     return 0;
             }
         }
+        nanosleep((const struct timespec[]) {{0, 1000L}}, NULL);
     }
 }
