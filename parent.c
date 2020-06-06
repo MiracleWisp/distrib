@@ -18,9 +18,6 @@ void parent_run() {
 
     log_received_all_started();
 
-    bank_robbery(NULL, processes_count - 1);
-
-    parent_send_stop();
 
     for (size_t id = 1; id < processes_count; id++) {
         Message msg;
@@ -30,9 +27,6 @@ void parent_run() {
         receive(NULL, id, &msg);
     }
     log_received_all_done();
-
-
-    parent_receive_balance_histories();
 
     // Wait for the children to stop
     for (int id = 1; id < processes_count; id++) {
@@ -75,18 +69,4 @@ void parent_send_stop() {
             }
     };
     send_multicast(NULL, &msg);
-}
-
-void parent_receive_balance_histories() {
-    AllHistory history;
-    history.s_history_len = processes_count - 1;
-    for (size_t child_id = 1; child_id <= processes_count - 1; child_id++) {
-        Message msg;
-        receive_any(NULL, &msg);
-        update_local_time(msg.s_header.s_local_time);
-        BalanceHistory *received_history = (BalanceHistory *) &msg.s_payload;
-        history.s_history[received_history->s_id - 1] = *received_history;
-    }
-
-    print_history(&history);
 }

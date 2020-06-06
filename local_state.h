@@ -5,15 +5,26 @@
 #include "banking.h"
 
 typedef struct {
+    timestamp_t time;
+    local_id process_id;
+} QueueElement;
+
+typedef struct {
+    QueueElement queue[64];
+    int size;
+} Queue;
+
+typedef struct {
     local_id id;
-    balance_t init_balance;
-    BalanceHistory history;
     timestamp_t current_time;
+    int mutex_enabled;
+    int done_received;
+    Queue queue;
 } LocalState;
 
 LocalState local_state;
 
-void init_state(local_id local_pid, balance_t init_balance);
+void init_state(local_id local_pid, int mutex_enabled);
 
 void update_local_time(timestamp_t time);
 

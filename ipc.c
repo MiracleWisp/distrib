@@ -60,7 +60,7 @@ int receive_any(void *self, Message *msg) {
                     if (msg->s_header.s_payload_len) {
                         read(fd, &msg->s_payload, (size_t) msg->s_header.s_payload_len);
                     }
-                    return 0;
+                    return src;
             }
         }
         nanosleep((const struct timespec[]) {{0, 1000L}}, NULL);

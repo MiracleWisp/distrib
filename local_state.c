@@ -1,22 +1,12 @@
 #include "local_state.h"
 
-void init_state(local_id local_pid, balance_t init_balance) {
+void init_state(local_id local_pid, int mutex_enabled) {
     local_state = (LocalState) {
             local_pid,
-            init_balance,
-            {
-                    local_pid,
-                    1
-            },
+            0,
+            mutex_enabled,
             0
     };
-    for (int i = 0; i < MAX_T; i++) {
-        local_state.history.s_history[i] = (BalanceState) {
-                init_balance,
-                i,
-                0
-        };
-    }
 }
 
 timestamp_t get_lamport_time() {

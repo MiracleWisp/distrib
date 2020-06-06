@@ -15,6 +15,17 @@
 int main(int argc, char **argv) {
     //read options
     int opt;
+    int mutex_enabled = 0;
+    for (int i = 0; i < argc; i++) {
+        if (strcmp(argv[i], "--mutexl") == 0) {
+            argc--;
+            for (int j = i; j < argc; j++){
+                argv[j] = argv[j + 1];
+            }
+            mutex_enabled = 1;
+            break;
+        }
+    }
     while ((opt = getopt(argc, argv, "p:")) != -1) {
         switch (opt) {
             case 'p':
@@ -34,7 +45,7 @@ int main(int argc, char **argv) {
         if (!child_pid) {
             //child
             local_state.id = id;
-            init_state(id, strtol(argv[id + 2], NULL, 10));
+            init_state(id, mutex_enabled);
             break;
         } else {
             //parent

@@ -15,8 +15,7 @@ void log_init() {
 void log_started() {
     pid_t pid = getpid();
     pid_t parent_pid = getppid();
-    fprintf(events_log_file, log_started_fmt, get_lamport_time(), local_state.id, pid, parent_pid,
-            local_state.init_balance);
+    fprintf(events_log_file, log_started_fmt, get_lamport_time(), local_state.id, pid, parent_pid, 0);
 }
 
 void log_received_all_started() {
@@ -24,8 +23,7 @@ void log_received_all_started() {
 }
 
 void log_done() {
-    fprintf(events_log_file, log_done_fmt, get_lamport_time(), local_state.id,
-            local_state.history.s_history[local_state.history.s_history_len].s_balance);
+    fprintf(events_log_file, log_done_fmt, get_lamport_time(), local_state.id, 0);
 }
 
 void log_received_all_done() {
