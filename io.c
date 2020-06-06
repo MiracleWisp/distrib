@@ -28,7 +28,6 @@ void create_pipes() {
                     unsigned int flags = fcntl(fds[i], F_GETFL, 0);
                     fcntl(fds[i], F_SETFL, flags | O_NONBLOCK);
                 }
-
                 reader[source][destination] = fds[0];
                 writer[source][destination] = fds[1];
             }

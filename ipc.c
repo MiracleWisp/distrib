@@ -13,8 +13,7 @@
 
 int send(void *self, local_id dst, const Message *msg) {
     int fd = writer[local_state.id][dst];
-    write(fd, &msg->s_header, sizeof(MessageHeader));
-    write(fd, &msg->s_payload, msg->s_header.s_payload_len);
+    write(fd, msg, sizeof(MessageHeader) + msg->s_header.s_payload_len);
     return 0;
 }
 
@@ -55,14 +54,11 @@ int receive_any(void *self, Message *msg) {
                     }
                     break;
                 case 0:
-//                    printf("End of conversation\n");
+//                    printf("End of conversaпtion\n");
                     break;
                 default:
                     if (msg->s_header.s_payload_len) {
-                        unsigned int flags = fcntl(fd, F_GETFL, 0);
-                        fcntl(fd, F_SETFL, flags & !O_NONBLOCK);
-                        read_count = read(fd, &msg->s_payload, (size_t) msg->s_header.s_payload_len);
-                        fcntl(fd, F_SETFL, flags | O_NONBLOCK);
+                        read(fd, &msg->s_payload, (size_t) msg->s_header.s_payload_len);
                     }
                     return 0;
             }

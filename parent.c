@@ -13,6 +13,7 @@ void parent_run() {
             continue;
         }
         receive(NULL, id, &msg);
+        update_local_time(msg.s_header.s_local_time);
     }
 
     log_received_all_started();
@@ -41,12 +42,13 @@ void parent_run() {
 }
 
 void transfer(void *parent_data, local_id src, local_id dst, balance_t amount) {
+    local_state.current_time++;
     Message msg = {
             {
                     MESSAGE_MAGIC,
                     sizeof(TransferOrder),
                     TRANSFER,
-                    get_physical_time()
+                    get_lamport_time()
             }
     };
     TransferOrder order = {
@@ -58,15 +60,18 @@ void transfer(void *parent_data, local_id src, local_id dst, balance_t amount) {
     send(NULL, src, &msg);
     //receive ACK
     receive_any(NULL, &msg);
+    update_local_time(msg.s_header.s_local_time);
 }
 
 void parent_send_stop() {
+    local_state.current_time++;
+
     Message msg = {
             {
                     MESSAGE_MAGIC,
                     0,
                     STOP,
-                    get_physical_time()
+                    get_lamport_time()
             }
     };
     send_multicast(NULL, &msg);
@@ -78,6 +83,7 @@ void parent_receive_balance_histories() {
     for (size_t child_id = 1; child_id <= processes_count - 1; child_id++) {
         Message msg;
         receive_any(NULL, &msg);
+        update_local_time(msg.s_header.s_local_time);
         BalanceHistory *received_history = (BalanceHistory *) &msg.s_payload;
         history.s_history[received_history->s_id - 1] = *received_history;
     }
