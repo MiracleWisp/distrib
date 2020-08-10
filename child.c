@@ -79,11 +79,23 @@ void child_send_done() {
 void child_process_message() {
     while (local_state.done_received != processes_count - 2) {
         Message msg;
-        receive_any(NULL, &msg);
+        int peer = receive_any(NULL, &msg);
         update_local_time(msg.s_header.s_local_time);
         switch (msg.s_header.s_type) {
             case DONE:
                 local_state.done_received++;
+                break;
+            case CS_REQUEST:
+                local_state.current_time++;
+                Message message = {
+                        .s_header = {
+                                .s_magic = MESSAGE_MAGIC,
+                                .s_local_time = get_lamport_time(),
+                                .s_type = CS_REPLY,
+                                .s_payload_len = 0,
+                        }
+                };
+                send(NULL, peer, &message);
                 break;
         }
     }

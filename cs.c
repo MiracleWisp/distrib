@@ -40,10 +40,7 @@ void qpop(Queue *queue) {
 int request_cs(const void *self) {
     local_state.current_time++;
 
-    qput(&local_state.queue, (QueueElement) {
-            get_lamport_time(),
-            local_state.id
-    });
+    local_state.request_time = get_lamport_time();
 
     Message request_msg = {
             .s_header = {
@@ -59,7 +56,7 @@ int request_cs(const void *self) {
     int replies_left = processes_count - 2;
 
     while (1) {
-        if (replies_left == 0 && qpeek(&local_state.queue).process_id == local_state.id) {
+        if (replies_left == 0) {
             break;
         }
 
@@ -73,26 +70,21 @@ int request_cs(const void *self) {
                 break;
 
             case CS_REQUEST:
-                qput(&local_state.queue, (QueueElement) {
-                        received_msg.s_header.s_local_time,
-                        peer
-                });
-
-                local_state.current_time++;
-                Message message = {
-                        .s_header = {
-                                .s_magic = MESSAGE_MAGIC,
-                                .s_local_time = get_lamport_time(),
-                                .s_type = CS_REPLY,
-                                .s_payload_len = 0,
-                        }
-                };
-                send(NULL, peer, &message);
-
-                break;
-
-            case CS_RELEASE:
-                qpop(&local_state.queue);
+                if (local_state.request_time < received_msg.s_header.s_local_time ||
+                    (local_state.request_time == received_msg.s_header.s_local_time && local_state.id < peer)) {
+                    local_state.deferred[peer] = 1;
+                } else {
+                    local_state.current_time++;
+                    Message message = {
+                            .s_header = {
+                                    .s_magic = MESSAGE_MAGIC,
+                                    .s_local_time = get_lamport_time(),
+                                    .s_type = CS_REPLY,
+                                    .s_payload_len = 0,
+                            }
+                    };
+                    send(NULL, peer, &message);
+                }
                 break;
 
             case DONE:
@@ -105,19 +97,24 @@ int request_cs(const void *self) {
 }
 
 int release_cs(const void *self) {
-    qpop(&local_state.queue);
     local_state.current_time++;
     Message message = {
             .s_header = {
                     .s_magic = MESSAGE_MAGIC,
                     .s_local_time = get_lamport_time(),
-                    .s_type = CS_RELEASE,
+                    .s_type = CS_REPLY,
                     .s_payload_len = 0,
-            },
-            .s_payload = "",
+            }
     };
 
-    send_multicast(NULL, &message);
+    for (int i = 0; i < MAX_PROCESS_ID; i++) {
+        if (local_state.deferred[i]) {
+            send(NULL, i, &message);
+            local_state.deferred[i] = 0;
+        }
+    }
+
+    local_state.request_time = -1;
 
     return 0;
 }

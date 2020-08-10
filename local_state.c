@@ -5,7 +5,8 @@ void init_state(local_id local_pid, int mutex_enabled) {
             local_pid,
             0,
             mutex_enabled,
-            0
+            0,
+            -1
     };
 }
 

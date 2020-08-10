@@ -19,7 +19,8 @@ typedef struct {
     timestamp_t current_time;
     int mutex_enabled;
     int done_received;
-    Queue queue;
+    timestamp_t request_time;
+    int deferred[MAX_PROCESS_ID];
 } LocalState;
 
 LocalState local_state;
